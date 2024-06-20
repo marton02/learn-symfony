@@ -1,0 +1,14 @@
+{% extends "base.html.twig" %}
+{% block body %}
+{% if messages|length > 0 %}
+
+    {% for key,msg in messages|slice(0,limit) %}
+        <div>
+            <a href="{{ path('app_show_one', {id: key}) }}">{{msg}}</a>
+        </div>
+    {% endfor %}
+
+{% else %}
+    There' nothing here yet!
+{% endif %}
+{% endblock %}
