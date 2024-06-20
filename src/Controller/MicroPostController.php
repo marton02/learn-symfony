@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class MicroPostController extends AbstractController
 {
-    #[Route('/micro/post', name: 'app_micro_post')]
+    #[Route('/micro-post', name: 'app_micro_post')]
     public function index(): Response
     {
         return $this->render('micro_post/index.html.twig', [
