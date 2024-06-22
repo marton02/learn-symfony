@@ -13,6 +13,11 @@
     </head>
     <body>
         <h1>Welcome to Twig!</h1>
+        {% for flash in app.flashes('success') %}
+            <div style="color: green;">
+                {{flash}}
+            <div>
+        {% endfor %}
         {% block body %}
         {% endblock %}
     </body>
