@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\MicroPost;
+use App\Form\CommentType;
 use App\Form\MicroPostType;
 use App\Repository\MicroPostRepository;
 use DateTime;
@@ -32,11 +34,11 @@ class MicroPostController extends AbstractController
         
         //dd($microPosts->findAll());
         return $this->render('micro_post/index.html.twig', [
-            'posts' => $microPosts->findAll(),
+            'posts' => $microPosts->findAllWithComments(),
         ]);
     }
 
-    #[Route('micro-post/{id<\d>}', name: 'app_micro_post_show')]
+    #[Route('micro-post/{id<\d+>}', name: 'app_micro_post_show')]
     public function showOne(MicroPost $microPost): Response{
         return $this->render('micro_post/show.html.twig', [
             'post' => $microPost,
@@ -68,7 +70,7 @@ class MicroPostController extends AbstractController
         ]);
     }
 
-    #[Route('micro-post/{id<\d>}/edit',name:'app_micro_post_edit')]
+    #[Route('micro-post/{id<\d+>}/edit',name:'app_micro_post_edit')]
     public function edit(EntityManagerInterface $entityManager, Request $request, MicroPost $microPost): Response{
         
         $form = $this->createForm(MicroPostType::class, $microPost);
@@ -89,6 +91,38 @@ class MicroPostController extends AbstractController
 
         return $this->render('micro_post/edit.html.twig',[
             "form" => $form,
+            "post" => $microPost,
+        ]);
+    }
+
+    #[Route('micro-post/{id<\d+>}/comment',name:'app_micro_post_comment')]
+    public function addComment(EntityManagerInterface $entityManager, Request $request, MicroPost $microPost): Response{
+        
+        $form = $this->createForm(CommentType::class, new Comment());
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $form->getData();
+            $comment->setPost($microPost);
+            $entityManager->persist($comment);
+            $entityManager->flush();
+
+            //Add a flash
+            $this->addFlash("success","Your comment have been added");
+
+            //Redirect
+            return $this->redirectToRoute(
+                "app_micro_post_show",
+                [
+                    "id" => $microPost->getId(),
+                ]
+            );
+        }
+
+        return $this->render('micro_post/comment.html.twig',[
+            "form" => $form,
+            "post" => $microPost,
         ]);
     }
 }
