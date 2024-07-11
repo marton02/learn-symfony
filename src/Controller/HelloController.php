@@ -57,10 +57,10 @@ class HelloController extends AbstractController
         // $entityManager->flush();
 
 
-        $comment = $post->getComments()[0];
-        $post->removeComment($comment);
-        $entityManager->persist($post);
-        $entityManager->flush();
+        // $comment = $post->getComments()[0];
+        // $post->removeComment($comment);
+        // $entityManager->persist($post);
+        // $entityManager->flush();
 
 
         //dd($post);
