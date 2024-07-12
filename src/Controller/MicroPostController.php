@@ -15,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class MicroPostController extends AbstractController
 {
@@ -39,6 +40,7 @@ class MicroPostController extends AbstractController
     }
 
     #[Route('micro-post/{id<\d+>}', name: 'app_micro_post_show')]
+    #[IsGranted(MicroPost::VIEW,'microPost')]
     public function showOne(MicroPost $microPost): Response{
         return $this->render('micro_post/show.html.twig', [
             'post' => $microPost,
@@ -54,7 +56,7 @@ class MicroPostController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
-            $post->setCreatedAt(new DateTime());
+            $post->setAuthor($this->getUser());
             $entityManager->persist($post);
             $entityManager->flush();
 
@@ -71,11 +73,14 @@ class MicroPostController extends AbstractController
     }
 
     #[Route('micro-post/{id<\d+>}/edit',name:'app_micro_post_edit')]
+    #[IsGranted(MicroPost::EDIT,'microPost')]
     public function edit(EntityManagerInterface $entityManager, Request $request, MicroPost $microPost): Response{
         
         $form = $this->createForm(MicroPostType::class, $microPost);
 
         $form->handleRequest($request);
+
+        $this->denyAccessUnlessGranted(MicroPost::EDIT,'microPost');
 
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
@@ -96,6 +101,7 @@ class MicroPostController extends AbstractController
     }
 
     #[Route('micro-post/{id<\d+>}/comment',name:'app_micro_post_comment')]
+    #[IsGranted('ROLE_COMMENTER')]
     public function addComment(EntityManagerInterface $entityManager, Request $request, MicroPost $microPost): Response{
         
         $form = $this->createForm(CommentType::class, new Comment());
@@ -105,6 +111,7 @@ class MicroPostController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $comment = $form->getData();
             $comment->setPost($microPost);
+            $comment->setAuthor($this->getUser());
             $entityManager->persist($comment);
             $entityManager->flush();
 
